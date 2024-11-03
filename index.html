@@ -87,11 +87,11 @@
     <form id="ideaForm">
         <input type="text" id="name" placeholder="الاسم" required><br>
         <input type="text" id="telegram" placeholder="معرف التليجرام" required><br>
-        <textarea id="idea" placeholder="اكتب فكرتك" rows="4" required></textarea><br>
+        <textarea id="idea" placeholder="اكتب رسالتك" rows="4" required></textarea><br>
         <button type="submit">إرسال</button>
        
     </form>
-<p>جميع الحقوق الى المبرمج سجاد 🧑🏻‍💻</p>
+<p>جميع الحقوق الى المبرمج مطور الدولار 🧑🏻‍💻</p>
     <script>
         document.getElementById("ideaForm").addEventListener("submit", function(event) {
             event.preventDefault();
@@ -106,7 +106,7 @@
 
             fetch(url).then(response => {
                 if (response.ok) {
-                    alert("تم إرسال الفكرة بنجاح!");
+                    alert("تم إرسال رسالتك بنجاح!");
                     document.getElementById("ideaForm").reset();
                 } else {
                     alert("حدث خطأ أثناء الإرسال. حاول مرة أخرى.");
