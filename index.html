@@ -1,118 +1,405 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فكرة</title>
-    <style>
-   
-        body {
-            font-family: 'Cairo', sans-serif;
-            direction: rtl;
-            text-align: center;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
-            color: white;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            background: -webkit-linear-gradient(45deg, #fff, #ff6f61);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: glow 1.5s ease-in-out infinite alternate;
-        }
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 10px #ff6f61, 0 0 20px #ff6f61, 0 0 30px #ff6f61;
-            }
-            to {
-                text-shadow: 0 0 20px #ff6f61, 0 0 30px #ff6f61, 0 0 40px #ff6f61;
-            }
-        }
-        form {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            backdrop-filter: blur(8.5px);
-            -webkit-backdrop-filter: blur(8.5px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-        input, textarea {
-            width: 80%;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 10px;
-            outline: none;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
-        }
-        input::placeholder, textarea::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-        button {
-            padding: 15px 30px;
-            background-color: #ff6f61;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(255, 111, 97, 0.4);
-        }
-        button:hover {
-            transform: scale(1.1);
-            background-color: #ff4f41;
-        }
-        button:active {
-            transform: scale(0.95);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>مخزن الفيديوهات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0b10; --surface: #13131c; --card: #1a1a26;
+    --border: rgba(255,255,255,0.07);
+    --accent: #e8b86d; --accent2: #c4873a;
+    --text: #f0ede8; --muted: #65627a; --danger: #e05c5c;
+    --radius: 18px;
+  }
+  html, body { height: 100%; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* LOCK */
+  #lockScreen {
+    align-items: center; justify-content: center; position: relative; overflow: hidden;
+    background: radial-gradient(ellipse 70% 50% at 50% -5%, rgba(232,184,109,0.12) 0%, transparent 65%), var(--bg);
+  }
+  .lock-box {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: center; gap: 28px;
+    width: 100%; max-width: 360px; padding: 32px 24px;
+  }
+  .lock-logo {
+    width: 88px; height: 88px; border-radius: 26px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center; font-size: 40px;
+    box-shadow: 0 0 60px rgba(232,184,109,0.3);
+    animation: glow 3s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%,100% { box-shadow: 0 0 40px rgba(232,184,109,0.2); }
+    50% { box-shadow: 0 0 80px rgba(232,184,109,0.45); }
+  }
+  .lock-title { font-size: 30px; font-weight: 900; text-align: center; }
+  .lock-sub { font-size: 14px; color: var(--muted); text-align: center; margin-top: -20px; }
+  #passInput {
+    width: 100%; padding: 16px 20px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-size: 22px; font-family: 'Tajawal', sans-serif;
+    text-align: center; letter-spacing: 8px; outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  #passInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,184,109,0.15); }
+  #passInput.err { border-color: var(--danger); animation: shake .4s ease; }
+  @keyframes shake {
+    20% { transform: translateX(-8px); } 40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
+  }
+  #errMsg { color: var(--danger); font-size: 13px; text-align: center; min-height: 18px; }
+  .btn-enter {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: var(--radius);
+    font-size: 17px; font-weight: 800; font-family: 'Tajawal', sans-serif;
+    color: #0b0b10; cursor: pointer;
+    transition: transform .15s; box-shadow: 0 6px 24px rgba(232,184,109,0.3);
+  }
+  .btn-enter:active { transform: scale(0.97); }
+
+  /* TOPBAR */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(11,11,16,0.92); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-title {
+    font-size: 20px; font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), #f0ddb0);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .vid-count {
+    font-size: 12px; color: var(--muted);
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 4px 12px; border-radius: 20px;
+  }
+
+  .content { flex: 1; padding: 14px 14px 110px; max-width: 960px; width: 100%; margin: 0 auto; }
+
+  .stor-bar {
+    display: none; margin: 10px 14px 0; padding: 10px 14px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    align-items: center; gap: 10px; font-size: 12px; color: var(--muted);
+  }
+  .stor-bar.show { display: flex; }
+  .stor-bg { flex: 1; height: 4px; background: var(--card); border-radius: 4px; overflow: hidden; }
+  .stor-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width .5s; }
+
+  /* EMPTY */
+  .empty {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 14px; padding: 80px 20px;
+    text-align: center; color: var(--muted);
+  }
+  .empty-icon { font-size: 70px; opacity: 0.2; }
+  .empty-t { font-size: 20px; font-weight: 700; color: var(--text); opacity: 0.35; }
+
+  /* GRID */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .vcard {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+    animation: fadeUp .35s ease both;
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; } }
+  .vcard:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(0,0,0,0.5); }
+  .vcard video { width: 100%; aspect-ratio: 16/9; object-fit: contain; background: #000; display: block; }
+  .vcard-info { padding: 12px 14px; display: flex; align-items: center; gap: 8px; }
+  .vcard-name { flex: 1; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vcard-size { font-size: 11px; color: var(--muted); background: var(--surface); padding: 3px 8px; border-radius: 8px; flex-shrink: 0; }
+  .vcard-del {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    padding: 4px 6px; border-radius: 8px; font-size: 16px; flex-shrink: 0;
+    transition: color .2s, background .2s;
+  }
+  .vcard-del:hover { color: var(--danger); background: rgba(224,92,92,0.12); }
+
+  /* FAB */
+  .fab {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+    z-index: 200;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 50px; padding: 15px 30px;
+    display: flex; align-items: center; gap: 10px;
+    color: #0b0b10; font-size: 16px; font-weight: 800; font-family: 'Tajawal', sans-serif;
+    cursor: pointer; box-shadow: 0 8px 32px rgba(232,184,109,0.4);
+    transition: transform .15s; white-space: nowrap;
+  }
+  .fab:active { transform: translateX(-50%) scale(0.95); }
+  .fab-plus { font-size: 24px; font-weight: 300; line-height: 1; }
+
+  /* MODAL */
+  .overlay {
+    display: none; position: fixed; inset: 0; z-index: 400;
+    background: rgba(0,0,0,0.78); backdrop-filter: blur(10px);
+    align-items: flex-end; justify-content: center;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 26px 26px 0 0; padding: 28px 22px 50px;
+    width: 100%; max-width: 520px; position: relative;
+    animation: slideUp .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 22px; }
+  .modal-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 22px; }
+  .close-btn {
+    position: absolute; top: 18px; left: 18px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 6px 14px; color: var(--muted); cursor: pointer;
+    font-size: 13px; font-family: 'Tajawal', sans-serif;
+  }
+  .dropzone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 44px 20px; text-align: center; cursor: pointer;
+    background: var(--card);
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    transition: border-color .2s, background .2s;
+  }
+  .dropzone.over { border-color: var(--accent); background: rgba(232,184,109,0.07); }
+  .dz-icon { font-size: 44px; }
+  .dz-title { font-size: 16px; font-weight: 700; }
+  .dz-sub { font-size: 13px; color: var(--muted); }
+  #fileInput { display: none; }
+  .prog-wrap { margin-top: 18px; display: none; flex-direction: column; gap: 10px; }
+  .prog-wrap.show { display: flex; }
+  .prog-label { font-size: 13px; color: var(--muted); text-align: center; }
+  .pbar-bg { background: var(--card); border: 1px solid var(--border); border-radius: 8px; height: 8px; overflow: hidden; }
+  .pbar-fill { height: 100%; border-radius: 8px; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .2s ease; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 12px 22px; font-size: 14px; font-weight: 600;
+    opacity: 0; transition: opacity .3s, transform .3s; z-index: 500; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media(max-width:480px) { .grid { grid-template-columns: 1fr; } }
+</style>
 </head>
 <body>
-    <h1>فكرة</h1>
-    <form id="ideaForm">
-        <input type="text" id="name" placeholder="الاسم" required><br>
-        <input type="text" id="telegram" placeholder="معرف التليجرام" required><br>
-        <textarea id="idea" placeholder="اكتب رسالتك" rows="4" required></textarea><br>
-        <button type="submit">إرسال</button>
-       
-    </form>
-<p>جميع الحقوق الى المبرمج مطور الدولار 🧑🏻‍💻</p>
-    <script>
-        document.getElementById("ideaForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const name = document.getElementById("name").value;
-            const telegram = document.getElementById("telegram").value;
-            const idea = document.getElementById("idea").value;
 
-            const message = `الاسم: ${name}\nمعرف التلي: ${telegram}\nالفكرة: ${idea} من برمجة سجاد`;
-            const botToken = "7873203741:AAF6_jtrIozUYntCQxrFrIZft7z1lPMqM-o";
-            const chatId = "6001517585";
-            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+<!-- LOCK -->
+<div id="lockScreen" class="screen active">
+  <div class="lock-box">
+    <div class="lock-logo">🎬</div>
+    <div class="lock-title">مخزن الفيديوهات</div>
+    <div class="lock-sub">أدخل كلمة المرور للدخول</div>
+    <input id="passInput" type="password" placeholder="••••" autocomplete="off">
+    <div id="errMsg"></div>
+    <button class="btn-enter" onclick="tryLogin()">دخول ←</button>
+  </div>
+</div>
 
-            fetch(url).then(response => {
-                if (response.ok) {
-                    alert("تم إرسال رسالتك بنجاح!");
-                    document.getElementById("ideaForm").reset();
-                } else {
-                    alert("حدث خطأ أثناء الإرسال. حاول مرة أخرى.");
-                }
-            });
-        });
-    </script>
+<!-- MAIN -->
+<div id="mainScreen" class="screen">
+  <div class="topbar">
+    <div class="topbar-title">🎬 مخزن الفيديوهات</div>
+    <div id="vidCount" class="vid-count">0 فيديو</div>
+  </div>
+
+  <div id="storBar" class="stor-bar">
+    <span>💾</span>
+    <div class="stor-bg"><div id="storFill" class="stor-fill" style="width:0%"></div></div>
+    <span id="storLabel">0 MB</span>
+  </div>
+
+  <div class="content">
+    <div id="emptyState" class="empty">
+      <div class="empty-icon">🎥</div>
+      <div class="empty-t">لا توجد فيديوهات بعد</div>
+      <div>اضغط على زر + لرفع أول فيديو</div>
+    </div>
+    <div id="videoGrid" class="grid" style="display:none"></div>
+  </div>
+
+  <button class="fab" onclick="openModal()">
+    <span class="fab-plus">＋</span> رفع فيديو
+  </button>
+</div>
+
+<!-- MODAL -->
+<div id="overlay" class="overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal()">✕ إغلاق</button>
+    <div class="modal-handle"></div>
+    <div class="modal-title">اختر فيديو للرفع</div>
+    <div class="dropzone" id="dropzone"
+         onclick="document.getElementById('fileInput').click()"
+         ondragover="dzOver(event)" ondragleave="dzLeave()" ondrop="dzDrop(event)">
+      <div class="dz-icon">📱</div>
+      <div class="dz-title">اضغط لاختيار فيديو</div>
+      <div class="dz-sub">أو اسحب وأفلت • يدعم جميع الصيغ</div>
+    </div>
+    <input type="file" id="fileInput" accept="video/*" multiple onchange="handleFiles(this.files)">
+    <div id="progWrap" class="prog-wrap">
+      <div id="progLabel" class="prog-label">جاري الحفظ...</div>
+      <div class="pbar-bg"><div id="pbarFill" class="pbar-fill"></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ─── كلمة المرور — غيّرها هنا ───────────────
+const PASSWORD = "1234";
+
+// ─── IndexedDB ────────────────────────────────
+let db;
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open("VideoVaultDB", 1);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains("videos"))
+        d.createObjectStore("videos", { keyPath: "id" });
+    };
+    req.onsuccess = e => { db = e.target.result; res(); };
+    req.onerror = () => rej(req.error);
+  });
+}
+function dbGetAll() {
+  return new Promise((res, rej) => {
+    const req = db.transaction("videos","readonly").objectStore("videos").getAll();
+    req.onsuccess = () => res(req.result.sort((a,b)=>b.createdAt-a.createdAt));
+    req.onerror = () => rej(req.error);
+  });
+}
+function dbAdd(v) {
+  return new Promise((res,rej)=>{
+    const req = db.transaction("videos","readwrite").objectStore("videos").add(v);
+    req.onsuccess=()=>res(); req.onerror=()=>rej(req.error);
+  });
+}
+function dbDel(id) {
+  return new Promise((res,rej)=>{
+    const req = db.transaction("videos","readwrite").objectStore("videos").delete(id);
+    req.onsuccess=()=>res(); req.onerror=()=>rej(req.error);
+  });
+}
+
+// ─── LOCK ─────────────────────────────────────
+document.getElementById("passInput").addEventListener("keydown", e => { if(e.key==="Enter") tryLogin(); });
+function tryLogin() {
+  if (document.getElementById("passInput").value === PASSWORD) {
+    document.getElementById("lockScreen").classList.remove("active");
+    document.getElementById("mainScreen").classList.add("active");
+    loadVideos();
+  } else {
+    const inp = document.getElementById("passInput");
+    inp.classList.add("err");
+    document.getElementById("errMsg").textContent = "كلمة المرور غير صحيحة ❌";
+    setTimeout(()=>{ inp.classList.remove("err"); document.getElementById("errMsg").textContent=""; },1600);
+    inp.value="";
+  }
+}
+
+// ─── RENDER ───────────────────────────────────
+async function loadVideos() {
+  const videos = await dbGetAll();
+  const grid = document.getElementById("videoGrid");
+  const empty = document.getElementById("emptyState");
+  document.getElementById("vidCount").textContent = videos.length + " فيديو";
+  if (!videos.length) { empty.style.display="flex"; grid.style.display="none"; document.getElementById("storBar").classList.remove("show"); return; }
+  empty.style.display="none"; grid.style.display="grid";
+  const totalBytes = videos.reduce((s,v)=>s+(v.size||0),0);
+  document.getElementById("storBar").classList.add("show");
+  document.getElementById("storFill").style.width = Math.min((totalBytes/(500*1024*1024))*100,100)+"%";
+  document.getElementById("storLabel").textContent = fmtSize(totalBytes);
+  grid.innerHTML="";
+  videos.forEach(v=>{
+    const blob = new Blob([v.data],{type:v.type});
+    const url = URL.createObjectURL(blob);
+    const card = document.createElement("div");
+    card.className="vcard";
+    card.innerHTML=`
+      <video src="${url}" controls preload="metadata" playsinline></video>
+      <div class="vcard-info">
+        <div class="vcard-name" title="${esc(v.name)}">${esc(v.name)}</div>
+        <div class="vcard-size">${fmtSize(v.size)}</div>
+        <button class="vcard-del" onclick="delVideo(${v.id},'${url}')" title="حذف">🗑</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+async function delVideo(id,url) {
+  if (!confirm("حذف هذا الفيديو نهائياً؟")) return;
+  URL.revokeObjectURL(url);
+  await dbDel(id);
+  showToast("✅ تم الحذف");
+  loadVideos();
+}
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
+function fmtSize(b){ if(!b)return""; if(b<1024*1024)return(b/1024).toFixed(0)+" KB"; return(b/(1024*1024)).toFixed(1)+" MB"; }
+
+// ─── MODAL ────────────────────────────────────
+function openModal(){ document.getElementById("overlay").classList.add("open"); }
+function closeModal(){
+  document.getElementById("overlay").classList.remove("open");
+  document.getElementById("progWrap").classList.remove("show");
+  document.getElementById("pbarFill").style.width="0%";
+  document.getElementById("fileInput").value="";
+}
+function overlayClick(e){ if(e.target===document.getElementById("overlay")) closeModal(); }
+function dzOver(e){ e.preventDefault(); document.getElementById("dropzone").classList.add("over"); }
+function dzLeave(){ document.getElementById("dropzone").classList.remove("over"); }
+function dzDrop(e){ e.preventDefault(); dzLeave(); handleFiles(e.dataTransfer.files); }
+
+async function handleFiles(files){
+  const vids = Array.from(files).filter(f=>f.type.startsWith("video/"));
+  if(!vids.length){ showToast("اختر ملف فيديو"); return; }
+  const pw=document.getElementById("progWrap"), lbl=document.getElementById("progLabel"), fill=document.getElementById("pbarFill");
+  pw.classList.add("show");
+  for(let i=0;i<vids.length;i++){
+    const file=vids[i];
+    lbl.textContent=`جاري الحفظ: ${file.name} (${i+1}/${vids.length})`;
+    const buf = await readBuf(file, p=>{ fill.style.width=p+"%"; });
+    await dbAdd({ id:Date.now()+i, name:file.name.replace(/\.[^.]+$/,""), size:file.size, type:file.type, data:buf, createdAt:Date.now() });
+    fill.style.width="100%";
+    await new Promise(r=>setTimeout(r,200));
+  }
+  showToast(`✅ تم رفع ${vids.length} فيديو — محفوظ بشكل دائم`);
+  closeModal();
+  loadVideos();
+}
+function readBuf(file, onProg){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onprogress=e=>{ if(e.lengthComputable) onProg(Math.round(e.loaded/e.total*90)); };
+    r.onload=e=>{ onProg(100); res(e.target.result); };
+    r.onerror=()=>rej(r.error);
+    r.readAsArrayBuffer(file);
+  });
+}
+
+// ─── TOAST ────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2800);
+}
+
+// ─── INIT ─────────────────────────────────────
+openDB();
+</script>
 </body>
 </html>
+
