@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -401,78 +402,23 @@ input,textarea{font-family:'Tajawal',sans-serif}
 
 <!-- ═══ IN-APP BROWSER ═══ -->
 <div id="browserModal" class="browser-modal">
-
-  <!-- top bar -->
-  <div style="background:rgba(11,11,16,0.98);border-bottom:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0">
-    <button class="browser-back" onclick="closeBrowser()">✕</button>
-    <div style="flex:1;font-size:15px;font-weight:800;text-align:center;background:linear-gradient(135deg,var(--accent),#f0ddb0);-webkit-background-clip:text;-webkit-text-fill-color:transparent">🌐 بحث وتحميل</div>
-    <div style="width:42px"></div>
+  <div class="browser-bar">
+    <button class="browser-back" onclick="closeBrowser()">← رجوع</button>
+    <input id="browserUrl" class="browser-url-inp" type="text" placeholder="ابحث أو أدخل رابط..." onkeydown="if(event.key==='Enter')browserGo()">
+    <button class="browser-go" onclick="browserGo()">بحث</button>
+    <button class="browser-dl" onclick="browserDownload()" title="تحميل">⬇</button>
   </div>
-
-  <!-- search bar -->
-  <div style="padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
-    <div style="display:flex;gap:8px">
-      <input id="browserUrl" style="flex:1;padding:11px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;outline:none;font-family:'Tajawal',sans-serif;transition:border-color .2s"
-             type="text" placeholder="🔍 اكتب اسم الفيديو أو الصق رابط..."
-             onkeydown="if(event.key==='Enter')browserGo()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-      <button onclick="browserGo()" style="padding:11px 16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;font-size:14px;font-weight:800;color:#0b0b10;cursor:pointer;font-family:'Tajawal',sans-serif;white-space:nowrap;flex-shrink:0">بحث</button>
+  <div class="browser-frame-wrap" id="browserFrameWrap">
+    <div class="browser-no-embed show" id="browserNoEmbed">
+      <div style="font-size:50px;opacity:.3">🌐</div>
+      <div style="font-size:18px;font-weight:700;opacity:.4">ابحث عن فيديو</div>
+      <div style="font-size:13px">أدخل اسم الفيديو أو رابطه في الشريط أعلاه</div>
     </div>
-  </div>
-
-  <!-- dynamic content -->
-  <div style="flex:1;overflow-y:auto" id="browserContent">
-
-    <!-- WELCOME -->
-    <div id="bState_welcome" style="padding:16px 12px">
-      <div style="text-align:center;padding:20px 0 16px;color:var(--muted)">
-        <div style="font-size:48px;opacity:.2;margin-bottom:8px">🔍</div>
-        <div style="font-size:15px;font-weight:700;color:var(--text);opacity:.3;margin-bottom:4px">ابحث عن فيديو يوتيوب</div>
-        <div style="font-size:12px">ستظهر نتائج البحث هنا مباشرة</div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:4px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px">🔗 لديك رابط فيديو؟</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.65">الصق رابط YouTube أو Vimeo أو MP4 مباشرة في الشريط ← سيُشغَّل داخل التطبيق مع زر تحميل</div>
-      </div>
+    <iframe id="browserFrame" class="browser-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allowfullscreen></iframe>
+    <div id="browserVideoPlayer" style="display:none;width:100%;height:100%;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+      <video id="browserVideo" controls style="width:100%;max-height:70%;"></video>
+      <a id="browserDlLink" download class="browser-ext-btn" style="background:var(--green);color:#fff;border-color:var(--green)">⬇ تحميل الفيديو</a>
     </div>
-
-    <!-- LOADING -->
-    <div id="bState_loading" style="display:none;padding:60px 20px;text-align:center;color:var(--muted)">
-      <div style="font-size:40px;margin-bottom:14px;animation:spin 1s linear infinite;display:inline-block">⏳</div>
-      <div style="font-size:14px;font-weight:600">جاري البحث...</div>
-    </div>
-    @keyframes spin{to{transform:rotate(360deg)}}
-
-    <!-- RESULTS LIST -->
-    <div id="bState_results" style="display:none;padding:12px">
-      <!-- inline player shown when tapping a result -->
-      <div id="bInlinePlayer" style="display:none;margin-bottom:12px;border-radius:14px;overflow:hidden;background:#000">
-        <div id="bInlineEmbed"></div>
-        <div style="padding:10px 12px;background:var(--card);display:flex;gap:8px">
-          <button onclick="doBrowserDownload()" style="flex:1;padding:11px;background:var(--green);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'Tajawal',sans-serif">⬇ تحميل</button>
-          <button onclick="addBrowserVideoToFeed()" style="flex:1;padding:11px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#0b0b10;font-size:13px;font-weight:800;cursor:pointer;font-family:'Tajawal',sans-serif">＋ نشر</button>
-          <button onclick="document.getElementById('bInlinePlayer').style.display='none'" style="padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:13px;cursor:pointer;font-family:'Tajawal',sans-serif">✕</button>
-        </div>
-      </div>
-      <div id="bResultsCount" style="font-size:11px;color:var(--muted);margin-bottom:10px;padding-right:2px"></div>
-      <div id="bResultsList" style="display:flex;flex-direction:column;gap:10px"></div>
-    </div>
-
-    <!-- URL PLAYER (for pasted URLs) -->
-    <div id="bState_urlplayer" style="display:none;padding:12px">
-      <div id="bUrlEmbed" style="border-radius:14px;overflow:hidden;margin-bottom:10px"></div>
-      <div style="display:flex;gap:8px">
-        <button onclick="doBrowserDownload()" style="flex:1;padding:13px;background:var(--green);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Tajawal',sans-serif">⬇ تحميل الفيديو</button>
-        <button onclick="addBrowserVideoToFeed()" style="flex:1;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;color:#0b0b10;font-size:14px;font-weight:800;cursor:pointer;font-family:'Tajawal',sans-serif">＋ نشر</button>
-      </div>
-    </div>
-
-    <!-- ERROR -->
-    <div id="bState_error" style="display:none;padding:40px 20px;text-align:center;color:var(--muted)">
-      <div style="font-size:40px;margin-bottom:12px">😕</div>
-      <div style="font-size:14px;font-weight:700;color:var(--text);opacity:.5;margin-bottom:6px">لم يتم العثور على نتائج</div>
-      <div style="font-size:12px" id="bErrMsg"></div>
-    </div>
-
   </div>
 </div>
 
@@ -830,168 +776,62 @@ async function publishMessage(){
 }
 
 // ════ IN-APP BROWSER ════
-let browserCurrentUrl="", browserCurrentType="", browserCurrentTitle="";
+let browserCurrentUrl="";
+function openBrowser(){document.getElementById("browserModal").classList.add("open")}
+function closeBrowser(){document.getElementById("browserModal").classList.remove("open");document.getElementById("browserFrame").src="about:blank"}
 
-const BSTATES = ["welcome","loading","results","urlplayer","error"];
-function bShow(state){ BSTATES.forEach(s=>{ const el=document.getElementById("bState_"+s); if(el) el.style.display = s===state?"block":"none"; }); }
-
-function openBrowser(){
-  document.getElementById("browserModal").classList.add("open");
-  setTimeout(()=>document.getElementById("browserUrl").focus(),200);
-}
-function closeBrowser(){
-  document.getElementById("browserModal").classList.remove("open");
-  document.getElementById("browserUrl").value="";
-  document.getElementById("bInlinePlayer").style.display="none";
-  bShow("welcome");
-  browserCurrentUrl=""; browserCurrentType=""; browserCurrentTitle="";
-}
-
-async function browserGo(){
-  const val = document.getElementById("browserUrl").value.trim();
+function browserGo(){
+  let val=document.getElementById("browserUrl").value.trim();
   if(!val) return;
+  document.getElementById("browserNoEmbed").classList.remove("show");
+  document.getElementById("browserVideoPlayer").style.display="none";
 
-  // ── Pasted URL: direct MP4 ──
-  if(/\.(mp4|webm|ogg|ogv|mov|mkv)(\?.*)?$/i.test(val)){
-    browserCurrentUrl=val; browserCurrentType="direct"; browserCurrentTitle="فيديو مباشر";
-    document.getElementById("bUrlEmbed").innerHTML=`<video src="${esc(val)}" controls playsinline style="width:100%;aspect-ratio:16/9;background:#000;display:block"></video>`;
-    bShow("urlplayer"); return;
+  // Direct video file
+  if(/\.(mp4|webm|ogg|ogv|mov)(\?.*)?$/i.test(val)){
+    browserCurrentUrl=val;
+    const vp=document.getElementById("browserVideoPlayer");
+    const vid=document.getElementById("browserVideo");
+    const dlLink=document.getElementById("browserDlLink");
+    vid.src=val;
+    dlLink.href=val;
+    dlLink.download=val.split("/").pop().split("?")[0];
+    document.getElementById("browserFrame").src="about:blank";
+    vp.style.display="flex";
+    return;
   }
 
-  // ── Pasted URL: YouTube ──
-  const yt=val.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  if(yt){
-    browserCurrentUrl=val; browserCurrentType="youtube"; browserCurrentTitle="فيديو YouTube";
-    document.getElementById("bUrlEmbed").innerHTML=`<div style="position:relative;aspect-ratio:16/9;background:#000"><iframe style="position:absolute;inset:0;width:100%;height:100%;border:none" src="https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0&autoplay=1" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe></div>`;
-    bShow("urlplayer"); return;
+  // Check if URL
+  let url=val;
+  if(!val.startsWith("http")){
+    // It's a search query - use DuckDuckGo HTML (no X-Frame issues for basic search)
+    url="https://duckduckgo.com/?q="+encodeURIComponent(val)+"&ia=videos";
   }
 
-  // ── Pasted URL: Vimeo ──
-  const vm=val.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if(vm){
-    browserCurrentUrl=val; browserCurrentType="vimeo"; browserCurrentTitle="فيديو Vimeo";
-    document.getElementById("bUrlEmbed").innerHTML=`<div style="position:relative;aspect-ratio:16/9;background:#000"><iframe style="position:absolute;inset:0;width:100%;height:100%;border:none" src="https://player.vimeo.com/video/${vm[1]}?autoplay=1" allowfullscreen></iframe></div>`;
-    bShow("urlplayer"); return;
-  }
-
-  // ── Text search → YouTube RSS via CORS proxy ──
-  bShow("loading");
-  document.getElementById("bInlinePlayer").style.display="none";
-
-  try {
-    const rssUrl = "https://www.youtube.com/feeds/videos.xml?search_query=" + encodeURIComponent(val);
-    const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(rssUrl);
-    const resp = await fetch(proxyUrl, {signal: AbortSignal.timeout(10000)});
-    const json = await resp.json();
-    const xml = new DOMParser().parseFromString(json.contents, "text/xml");
-    const entries = Array.from(xml.querySelectorAll("entry"));
-
-    if(!entries.length){ bShow("error"); document.getElementById("bErrMsg").textContent="جرب كلمات بحث مختلفة"; return; }
-
-    const results = entries.map(e=>{
-      const id = e.querySelector("videoId")?.textContent || e.querySelector("id")?.textContent?.split(":").pop() || "";
-      return {
-        id,
-        title: e.querySelector("title")?.textContent || "بدون عنوان",
-        channel: e.querySelector("author name")?.textContent || "",
-        thumb: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
-        url: `https://www.youtube.com/watch?v=${id}`
-      };
-    }).filter(r=>r.id);
-
-    document.getElementById("bResultsCount").textContent = `${results.length} نتيجة لـ "${val}"`;
-    const list = document.getElementById("bResultsList");
-    list.innerHTML = "";
-
-    results.forEach(r=>{
-      const card = document.createElement("div");
-      card.style.cssText="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .2s";
-      card.innerHTML=`
-        <img src="${r.thumb}" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#111"
-             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 9%22><rect fill=%22%23111%22 width=%2216%22 height=%229%22/><text x=%228%22 y=%225%22 text-anchor=%22middle%22 fill=%22%23555%22 font-size=%223%22>🎬</text></svg>'">
-        <div style="padding:10px 12px">
-          <div style="font-size:13px;font-weight:700;line-height:1.4;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(r.title)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${esc(r.channel)}</div>
-          <div style="display:flex;gap:7px">
-            <button onclick="bPlayResult('${r.id}','${esc(r.title).replace(/'/g,"\\'")}','${r.url}')"
-              style="flex:1;padding:9px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:12px;font-weight:700;cursor:pointer;font-family:'Tajawal',sans-serif">
-              ▶ تشغيل
-            </button>
-            <button onclick="bDownloadResult('${r.url}','${esc(r.title).replace(/'/g,"\\'")}')"
-              style="flex:1;padding:9px;background:var(--green);border:none;border-radius:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Tajawal',sans-serif">
-              ⬇ تحميل
-            </button>
-            <button onclick="bPublishResult('${r.id}','${esc(r.title).replace(/'/g,"\\'")}','${r.url}')"
-              style="flex:1;padding:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:9px;color:#0b0b10;font-size:12px;font-weight:700;cursor:pointer;font-family:'Tajawal',sans-serif">
-              ＋ نشر
-            </button>
-          </div>
-        </div>`;
-      list.appendChild(card);
-    });
-
-    bShow("results");
-
-  } catch(e){
-    bShow("error");
-    document.getElementById("bErrMsg").textContent = "تعذّر الاتصال — تحقق من الإنترنت وأعد المحاولة";
-  }
+  browserCurrentUrl=url;
+  const frame=document.getElementById("browserFrame");
+  frame.src=url;
+  // Handle load error
+  frame.onerror=()=>{
+    document.getElementById("browserNoEmbed").classList.add("show");
+    document.getElementById("browserNoEmbed").innerHTML=`
+      <div style="font-size:50px;opacity:.3">🚫</div>
+      <div style="font-size:16px;font-weight:700">لا يمكن تضمين هذا الموقع</div>
+      <div style="font-size:13px;color:var(--muted)">الموقع يمنع العرض المضمّن</div>
+      <a href="${url}" target="_blank" class="browser-ext-btn">فتح في المتصفح الخارجي ↗</a>
+    `;
+  };
 }
 
-function bPlayResult(videoId, title, url){
-  browserCurrentUrl=url; browserCurrentType="youtube"; browserCurrentTitle=title;
-  const player = document.getElementById("bInlinePlayer");
-  document.getElementById("bInlineEmbed").innerHTML=`<div style="position:relative;aspect-ratio:16/9;background:#000"><iframe style="position:absolute;inset:0;width:100%;height:100%;border:none" src="https://www.youtube-nocookie.com/embed/${videoId}?rel=0&autoplay=1" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe></div>`;
-  player.style.display="block";
-  player.scrollIntoView({behavior:"smooth"});
-}
-
-async function bDownloadResult(url, title){
-  showToast("⏳ جاري الحصول على رابط التحميل...");
-  try{
-    const res = await fetch("https://api.cobalt.tools/",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      body:JSON.stringify({url, downloadMode:"auto", videoQuality:"720"}),
-      signal: AbortSignal.timeout(12000)
-    });
-    const data = await res.json();
-    if(data.url){ window.open(data.url,"_blank"); showToast("✅ جاري التحميل"); }
-    else if(data.picker && data.picker[0]){ window.open(data.picker[0].url,"_blank"); showToast("✅ جاري التحميل"); }
-    else throw new Error("no url");
-  }catch(e){
-    window.open("https://cobalt.tools/","_blank");
-    showToast("افتح cobalt.tools والصق الرابط");
-  }
-}
-
-async function bPublishResult(videoId, title, url){
-  const cat = detectCategory(title);
-  await dbAdd({id:Date.now(),type:"video-url",title,author:currentUser,urlType:"youtube",
-    embedUrl:`https://www.youtube-nocookie.com/embed/${videoId}?rel=0`,size:0,category:cat,createdAt:Date.now()});
-  showToast("✅ تم نشر الفيديو في الموقع");
-  loadPosts();
-}
-
-async function doBrowserDownload(){
-  if(!browserCurrentUrl){showToast("لا يوجد رابط");return}
-  if(browserCurrentType==="direct"){
-    const a=document.createElement("a"); a.href=browserCurrentUrl;
-    a.download=browserCurrentUrl.split("/").pop().split("?")[0]; a.click();
-    showToast("✅ جاري التحميل...");
+function browserDownload(){
+  const url=browserCurrentUrl;
+  if(!url){showToast("لا يوجد رابط للتحميل");return}
+  if(/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)){
+    const a=document.createElement("a");a.href=url;a.download=url.split("/").pop().split("?")[0];a.click();
   }else{
-    await bDownloadResult(browserCurrentUrl, browserCurrentTitle);
+    // For YouTube etc., open cobalt.tools
+    const dl=window.open("https://cobalt.tools/","_blank");
+    showToast("سيتم فتح أداة التحميل في متصفح جديد");
   }
-}
-
-async function addBrowserVideoToFeed(){
-  if(!browserCurrentUrl){showToast("لا يوجد رابط");return}
-  const title = prompt("عنوان الفيديو:", browserCurrentTitle) || browserCurrentTitle || "فيديو";
-  const p = parseUrl(browserCurrentUrl);
-  if(!p){showToast("الرابط غير مدعوم");return}
-  const cat=detectCategory(title);
-  await dbAdd({id:Date.now(),type:"video-url",title,author:currentUser,urlType:p.urlType,embedUrl:p.embedUrl,size:0,category:cat,createdAt:Date.now()});
-  closeBrowser(); showToast("✅ تم نشر الفيديو"); loadPosts();
 }
 
 // ════ HELPERS ════
